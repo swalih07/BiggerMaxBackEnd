@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public class IWishlistService
+    public interface IWishlistService
     {
         Task AddToWishlistAsync(string userId, AddToWishlistDto dto);
     }

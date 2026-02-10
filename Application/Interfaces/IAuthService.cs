@@ -1,8 +1,4 @@
 ﻿using Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Interfaces
@@ -10,6 +6,11 @@ namespace Application.Interfaces
     public interface IAuthService
     {
         Task<string> RegisterAsync(RegisterDto dto);
-        Task<string> LoginAsync(LoginDto dto);
+
+        // 🔄 MODIFIED: Return AuthResponseDto instead of string
+        Task<AuthResponseDto> LoginAsync(LoginDto dto);
+
+        // ✅ ADDED: Refresh token method
+        Task<string> RefreshAsync(string refreshToken);
     }
 }

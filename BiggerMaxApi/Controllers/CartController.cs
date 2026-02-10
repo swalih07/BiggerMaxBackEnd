@@ -1,4 +1,5 @@
-﻿using Application.DTOs;
+﻿using BiggerMaxApi.Common; // ✅ ADDED (if ApiResponse is here)
+using Application.DTOs;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,8 +17,9 @@ namespace BiggerMaxApi.Controllers
         {
             _cartService = cartService;
         }
+
         [HttpPost("add")]
-        public async Task<IActionResult>AddToCart(AddToCartDto dto)
+        public async Task<IActionResult> AddToCart(AddToCartDto dto)
         {
             var userId = User.FindFirst("uid")?.Value;
 
@@ -26,15 +28,16 @@ namespace BiggerMaxApi.Controllers
                 return Unauthorized(new ApiResponse<string>
                 {
                     Success = false,
-                    MessageProcessingHandler = "User Not Authorized"
+                    Message = "User Not Authorized" // 🔄 MODIFIED
                 });
             }
+
             await _cartService.AddToCartAsync(userId, dto);
 
             return Ok(new ApiResponse<string>
             {
                 Success = true,
-                MessageProcessingHandler = "Product Added to Cart"
+                Message = "Product Added to Cart" // 🔄 MODIFIED
             });
         }
     }

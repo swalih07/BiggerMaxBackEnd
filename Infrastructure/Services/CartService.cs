@@ -1,4 +1,5 @@
 ﻿using Application.DTOs;
+using Domain.Entities;
 using Application.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -26,8 +27,8 @@ namespace Infrastructure.Services
             {
                 cart = new Cart
                 {
-                    userId = userId,
-                    CartItems = new List<cartItem>()
+                    UserId = userId,
+                    CartItems = new List<CartItem>()
                 };
                 _context.Carts.Add(cart);
                 await _context.SaveChangesAsync();

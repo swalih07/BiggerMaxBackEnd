@@ -1,6 +1,7 @@
-﻿using Application.DTOs;
+﻿// 🔄 MODIFIED: Make sure namespace matches where ApiResponse exists
+using BiggerMaxApi.Common; // ✅ CHANGED (if ApiResponse is in Application.Common)
+using Application.DTOs;
 using Application.Interfaces;
-using BiggerMaxApi.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +10,6 @@ namespace BiggerMaxApi.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService _wishlistService;
@@ -18,8 +18,10 @@ namespace BiggerMaxApi.Controllers
         {
             _wishlistService = wishlistService;
         }
+
         [HttpPost("add")]
-        public async Task<ActionResult<ApiResponse<string>>>AddtoWishlist(AddToWishlistDto dto)
+        // 🔄 MODIFIED: Method name casing fixed
+        public async Task<ActionResult<ApiResponse<string>>> AddToWishlist(AddToWishlistDto dto)
         {
             var userId = User.FindFirst("uid")?.Value;
 
@@ -29,12 +31,13 @@ namespace BiggerMaxApi.Controllers
                     Success = false,
                     Message = "Unauthorized"
                 });
+
             await _wishlistService.AddToWishlistAsync(userId, dto);
 
             return Ok(new ApiResponse<string>
             {
                 Success = true,
-                Message="Product Added To Wishlist"
+                Message = "Product Added To Wishlist"
             });
         }
     }

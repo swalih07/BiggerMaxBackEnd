@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Interfaces
 {
-    public class ICartService
+    public interface ICartService
     {
         Task AddToCartAsync(string userId, AddToCartDto dto);
     }
