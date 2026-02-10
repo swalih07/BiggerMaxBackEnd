@@ -1,0 +1,6 @@
+@BiggerMaxApi_HostAddress = http://localhost:5139
+
+GET {{BiggerMaxApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
