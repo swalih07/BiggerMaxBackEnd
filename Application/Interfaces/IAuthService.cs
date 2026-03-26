@@ -7,10 +7,14 @@ namespace Application.Interfaces
     {
         Task<string> RegisterAsync(RegisterDto dto);
 
-        // 🔄 MODIFIED: Return AuthResponseDto instead of string
+        // Return AuthResponseDto instead of string
         Task<AuthResponseDto> LoginAsync(LoginDto dto);
 
-        // ✅ ADDED: Refresh token method
-        Task<string> RefreshAsync(string refreshToken);
+        // Refresh token method
+        //Task<string> RefreshAsync(string refreshToken);
+        Task<bool> LogoutAsync(string refreshToken);
+        Task<UserProfileDto> GetProfileAsync(string userId);
+        Task<string> RefreshTokenAsync(string refreshToken);
+        
     }
 }

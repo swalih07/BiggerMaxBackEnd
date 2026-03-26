@@ -10,5 +10,8 @@ namespace Application.Interfaces
     public interface ICartService
     {
         Task AddToCartAsync(string userId, AddToCartDto dto);
+        Task<CartResponseDto> GetCartAsync(string userId);
+        Task<bool> UpdateCartAsync(string userId, UpdateCartDto dto);
+        Task<bool> DeleteCartItemAsync(string userId, int productId);
     }
 }

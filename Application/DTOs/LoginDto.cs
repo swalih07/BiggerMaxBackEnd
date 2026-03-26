@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Application.DTOs
+namespace Application.DTOs;
+
+public class LoginDto
 {
-    public class LoginDto
-    {
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [RegularExpression(@"^[^\s@]+@[^\s@]+\.[^\s@]+$",
+    ErrorMessage = "Email must not contain spaces")]
+    public string Email { get; set; } = string.Empty;
+
+
+    [Required(ErrorMessage = "Password is required")]
+    public string Password { get; set; } = string.Empty;
 }

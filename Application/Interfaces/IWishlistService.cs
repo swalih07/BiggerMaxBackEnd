@@ -9,6 +9,9 @@ namespace Application.Interfaces
 {
     public interface IWishlistService
     {
-        Task AddToWishlistAsync(string userId, AddToWishlistDto dto);
+        Task ToggleWishlistAsync(string userId, AddToWishlistDto dto);
+        Task<List<WishlistDto>> GetWishlistAsync(string userId);
+        //Task RemoveFromWishlistAsync(string userId,int ProductId);
+        Task ClearWishlistAsync(string userId);
     }
 }

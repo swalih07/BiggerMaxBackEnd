@@ -19,6 +19,11 @@ namespace Infrastructure.Data
         public DbSet<Wishlist> Wishlists { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Order>Orders { get; set; }
+
+        public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<Payments> Payments { get; set; }
+        public DbSet<ShippingAddress> ShippingAddresses { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,7 +50,22 @@ namespace Infrastructure.Data
                 .HasMany(w => w.WishlistItems)
                 .WithOne(wi => wi.Wishlist)
                 .HasForeignKey(wi => wi.WishlistId);
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderDetails)
+                .WithOne(od => od.Order)
+                .HasForeignKey(od => od.OrderId);
+
+            modelBuilder.Entity<Payments>()
+                .HasOne<Order>()
+                .WithMany()
+                .HasForeignKey(p => p.OrderId);
+            modelBuilder.Entity<Category>().HasData(
+               new Category { Id = 1, Name = "Men" },
+               new Category { Id = 2, Name = "Women" }
+           );
+
         }
+       
 
     }
 }

@@ -8,7 +8,6 @@ namespace BiggerMaxApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -19,17 +18,12 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts(
-        [FromQuery] ProductQueryParams query)
+    public async Task<IActionResult> GetProducts([FromQuery] ProductQueryParams query)
     {
         var result = await _productService.GetPagedResultAsync(query);
 
-        var response = ApiResponse<object>.SuccessResponse(new
-        {
-            result.TotalCount,
-            result.Items
-        });
-
-        return Ok(response);
+        return Ok(ApiResponse<PagedResult<ProductDto>>
+            .SuccessResponse(result, "Products fetched successfully"));
     }
+
 }

@@ -1,4 +1,4 @@
-﻿using Application.Interfaces; // ✅ ADDED (if missing)
+﻿using Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,27 +16,31 @@ namespace Infrastructure.Services
             _configuration = configuration;
         }
 
-        // 🔄 MODIFIED: Rename method to match interface
-        public string CreateAccessToken(string userId, string email)
+        public string CreateAccessToken(string userId, string email, string role)
         {
             var claims = new List<Claim>
             {
-                new Claim("uid", userId),
-                new Claim(ClaimTypes.Email, email)
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role) // ✅ only once
             };
 
             var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
+                Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"])
+            );
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var creds = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256
+            );
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                // 🔄 MODIFIED: Use UtcNow (recommended)
                 expires: DateTime.UtcNow.AddMinutes(
-                    Convert.ToDouble(_configuration["JwtSettings:DurationInMinutes"])),
+                    Convert.ToDouble(_configuration["JwtSettings:DurationInMinutes"])
+                ),
                 signingCredentials: creds
             );
 

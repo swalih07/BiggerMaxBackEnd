@@ -2,8 +2,9 @@
 
 public class ProductQueryParams
 {
-    public string? Category { get; set; }
-    public string? Search { get; set; }
+    public  int? CategoryId { get; set; }
+    public string Category { get; set; }= string.Empty;
+    public string Search { get; set; }=string.Empty;
 
     public string? SortBy { get; set; } = "price";
     public bool Desc { get; set; } = false;
