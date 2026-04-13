@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Data;
@@ -20,11 +20,19 @@ namespace Infrastructure.Services
         // =========================
         public async Task AddAsync(string userId, AddShippingAddressDto dto)
         {
-            int userIdInt = int.Parse(userId);   // 🔥 FIX
+            int userIdInt = int.Parse(userId);
+
+            // PREVENT DUPLICATES: Check if this user already has an identical address
+            var exists = await _context.ShippingAddresses
+                .AnyAsync(x => x.UserId == userIdInt && 
+                              x.AddressLine.Trim().ToLower() == dto.AddressLine.Trim().ToLower() &&
+                              x.Pincode == dto.Pincode);
+
+            if (exists) return; // Exit quietly if it already exists
 
             var address = new ShippingAddress
             {
-                UserId = userIdInt,   // ✅ int
+                UserId = userIdInt,
                 FullName = dto.FullName,
                 Phone = dto.Phone,
                 AddressLine = dto.AddressLine,
@@ -42,10 +50,17 @@ namespace Infrastructure.Services
         // =========================
         public async Task<List<ShippingAddressDto>> GetAllAsync(string userId)
         {
-            int userIdInt = int.Parse(userId);   // 🔥 FIX
+            int userIdInt = int.Parse(userId);
 
-            return await _context.ShippingAddresses
-                .Where(x => x.UserId == userIdInt)   // ✅ int == int
+            // Fetch all addresses
+            var addresses = await _context.ShippingAddresses
+                .Where(x => x.UserId == userIdInt)
+                .ToListAsync();
+
+            // Filter uniquely on normalized string in memory
+            return addresses
+                .GroupBy(x => new { addr = x.AddressLine.Trim().ToLower(), pin = x.Pincode })
+                .Select(g => g.First())
                 .Select(x => new ShippingAddressDto
                 {
                     Id = x.Id,
@@ -56,7 +71,7 @@ namespace Infrastructure.Services
                     State = x.State,
                     Pincode = x.Pincode
                 })
-                .ToListAsync();
+                .ToList();
         }
 
         // =========================

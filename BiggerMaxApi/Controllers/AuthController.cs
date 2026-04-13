@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using BiggerMaxApi.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -24,14 +24,38 @@ namespace BiggerMaxApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
-            var result = await _authService.RegisterAsync(dto);
-
-            return Ok(new ApiResponse<string>
+            try
             {
-                Success = true,
-                Message = result,
-                Data = null
-            });
+                var result = await _authService.RegisterAsync(dto);
+
+                if (result == "Registration successful")
+                {
+                    return Ok(new ApiResponse<string>
+                    {
+                        Success = true,
+                        Message = result,
+                        Data = null
+                    });
+                }
+                else
+                {
+                    return BadRequest(new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = result,
+                        Data = null
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
         }
 
         // ======================
@@ -59,12 +83,34 @@ namespace BiggerMaxApi.Controllers
                     Data = new AuthResponseDto
                     {
                         AccessToken = result.AccessToken,
-                        RefreshToken = null
+                        RefreshToken = result.RefreshToken,
+                        Email = result.Email,
+                        Role = result.Role
                     }
                 });
             }
             catch (Exception ex)
             {
+                if (ex.Message == "Invalid credentials")
+                {
+                    return Unauthorized(new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = ex.Message,
+                        Data = null
+                    });
+                }
+
+                if (ex.Message.Contains("blocked"))
+                {
+                    return StatusCode(403, new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = ex.Message,
+                        Data = null
+                    });
+                }
+
                 return BadRequest(new ApiResponse<string>
                 {
                     Success = false,
@@ -154,15 +200,12 @@ namespace BiggerMaxApi.Controllers
             });
         }
 
-        // ======================
-        // REFRESH TOKEN
-        // ======================
         [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh()
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto? dto)
         {
             try
             {
-                var refreshToken = Request.Cookies["refreshToken"];
+                var refreshToken = dto?.RefreshToken ?? Request.Cookies["refreshToken"];
 
                 if (string.IsNullOrEmpty(refreshToken))
                 {
@@ -174,13 +217,13 @@ namespace BiggerMaxApi.Controllers
                     });
                 }
 
-                var newAccessToken = await _authService.RefreshTokenAsync(refreshToken);
+                var authResponse = await _authService.RefreshTokenAsync(refreshToken);
 
-                return Ok(new ApiResponse<string>
+                return Ok(new ApiResponse<AuthResponseDto>
                 {
                     Success = true,
                     Message = "Token refreshed successfully",
-                    Data = newAccessToken
+                    Data = authResponse
                 });
             }
             catch (Exception ex)

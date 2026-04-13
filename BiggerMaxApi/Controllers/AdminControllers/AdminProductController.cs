@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces.AdminInterfaces;
 using BiggerMaxApi.Common;
 using Microsoft.AspNetCore.Authorization;

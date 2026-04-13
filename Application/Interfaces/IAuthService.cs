@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using System.Threading.Tasks;
 
 namespace Application.Interfaces
@@ -14,7 +14,7 @@ namespace Application.Interfaces
         //Task<string> RefreshAsync(string refreshToken);
         Task<bool> LogoutAsync(string refreshToken);
         Task<UserProfileDto> GetProfileAsync(string userId);
-        Task<string> RefreshTokenAsync(string refreshToken);
+        Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
         
     }
 }

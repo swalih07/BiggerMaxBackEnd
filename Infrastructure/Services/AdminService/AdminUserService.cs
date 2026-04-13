@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Application.DTOs;
 using Application.Interfaces.AdminInterfaces;
 using Infrastructure.Data;
@@ -29,7 +29,8 @@ namespace Infrastructure.Services.AdminService
                     u.Email,
                     u.Role,
                     u.IsActive,
-                    u.CreatedAt
+                    u.CreatedAt,
+                    OrderCount = _context.Orders.Count(o => o.UserId == u.Id)
                 })
                 .ToListAsync();
         }

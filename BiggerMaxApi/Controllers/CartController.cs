@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using BiggerMaxApi.Common;
 using Domain.Entities;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-[Authorize(Roles ="User")] // All endpoints require JWT authentication
+[Authorize(Roles ="User,Admin")] // Both User and Admin can have a cart
 [ApiController]
 [Route("api/[controller]")] // Base route: api/Cart
 public class CartController : ControllerBase

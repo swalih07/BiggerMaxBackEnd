@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using Domain.Enums;
 
 public class Order
@@ -13,6 +13,8 @@ public class Order
 
     public decimal TotalAmount { get; set; }
     public OrderStatus Status { get; set; }
+    public string? RazorpayOrderId { get; set; }
+    public string? RazorpayPaymentId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();

@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Data;
@@ -122,27 +122,27 @@ namespace Infrastructure.Services
                     ProductId = wi.ProductId,
                     ProductName = wi.Product.Name,
                     Price = wi.Product.Price,
-                    //ImageUrl = wi.Product.ImageUrl
+                    ImageUrl = wi.Product.ImageUrl
                 })
                 .ToList();
         }
-        //public async Task RemoveFromWishlistAsync(string userId,int productId)
-        //{
-        //    var wishlist = await _context.Wishlists
-        //        .Include(w => w.WishlistItems)
-        //        .FirstOrDefaultAsync(w => w.UserId == userId);
+        public async Task RemoveFromWishlistAsync(string userId, int productId)
+        {
+            var wishlist = await _context.Wishlists
+                .Include(w => w.WishlistItems)
+                .FirstOrDefaultAsync(w => w.UserId == userId);
 
-        //    if (wishlist == null)
-        //        throw new Exception("Wishlist not Found");
+            if (wishlist == null)
+                throw new Exception("Wishlist not Found");
 
-        //    var item = wishlist.WishlistItems
-        //        .FirstOrDefault(wi => wi.ProductId == productId);
-        //    if (item == null)
-        //        throw new Exception("Product not in Wishlist");
+            var item = wishlist.WishlistItems
+                .FirstOrDefault(wi => wi.ProductId == productId);
+            if (item == null)
+                throw new Exception("Product not in Wishlist");
 
-        //    _context.Remove(item);
-        //    await _context.SaveChangesAsync();
-        //}
+            _context.WishlistItems.Remove(item);
+            await _context.SaveChangesAsync();
+        }
         public async Task ClearWishlistAsync(string userId)
         {
             if (string.IsNullOrEmpty(userId))

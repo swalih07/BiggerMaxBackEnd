@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Data;
@@ -97,7 +97,7 @@ public class AuthService : IAuthService
     // =========================
     // REFRESH TOKEN
     // =========================
-    public async Task<string> RefreshTokenAsync(string refreshToken)
+    public async Task<AuthResponseDto> RefreshTokenAsync(string refreshToken)
     {
         var tokenInDb = await _context.RefreshTokens
             .FirstOrDefaultAsync(x =>
@@ -113,15 +113,21 @@ public class AuthService : IAuthService
         if (user == null)
             throw new Exception("User not found");
 
-        // 🔴 BLOCK CHECK HERE ALSO
         if (!user.IsActive)
             throw new Exception("Your account has been blocked by admin");
 
-        return _tokenService.CreateAccessToken(
+        var accessToken = _tokenService.CreateAccessToken(
             user.Id.ToString(),
             user.Email,
             user.Role
         );
+
+        return new AuthResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken, // Send back the same refresh token or generate a new one
+            Role = user.Role
+        };
     }
 
     // =========================

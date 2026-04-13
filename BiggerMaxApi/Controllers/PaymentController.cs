@@ -1,5 +1,6 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
+using BiggerMaxApi.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -21,22 +22,56 @@ namespace BiggerMaxApi.Controllers
         [HttpPost("pay/{orderId}")]
         public async Task<IActionResult> Pay(int orderId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var result = await _paymentService.PayAsync(userId!, orderId);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new ApiResponse<string> { Success = false, Message = "User ID missing" });
 
-            return Ok(result);
+                var result = await _paymentService.PayAsync(userId, orderId);
+
+                return Ok(new ApiResponse<PaymentResponseDto>
+                {
+                    Success = true,
+                    Message = "Razorpay Order created",
+                    Data = result
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message });
+            }
         }
+
         [HttpPost("verify-payment")]
-        public IActionResult VerifyPayment([FromBody] RazorpayVerifyDto model)
+        public async Task<IActionResult> VerifyPayment([FromBody] RazorpayVerifyDto model)
         {
-            bool isValid = _paymentService.VerifyPayment(model);
+            try
+            {
+                bool isValid = await _paymentService.VerifyAndConfirmPaymentAsync(model);
 
-            if (!isValid)
-                return BadRequest("Invalid Signature");
+                if (!isValid)
+                {
+                    return BadRequest(new ApiResponse<string>
+                    {
+                        Success = false,
+                        Message = "Invalid signature or Order not found",
+                        Data = null
+                    });
+                }
 
-            return Ok("Payment Verified");
+                return Ok(new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = "Payment confirmed and Order updated",
+                    Data = "Success"
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message });
+            }
         }
     }
-
 }

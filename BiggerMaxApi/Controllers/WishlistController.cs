@@ -1,11 +1,11 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using BiggerMaxApi.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-[Authorize(Roles = "User")]
+[Authorize(Roles = "User,Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class WishlistController : ControllerBase
@@ -88,6 +88,29 @@ public class WishlistController : ControllerBase
 
             return Ok(
                 ApiResponse<bool>.SuccessResponse(true, "Wishlist cleared")
+            );
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(
+                ApiResponse<object>.Fail(ex.Message)
+            );
+        }
+    }
+    [HttpDelete("remove/{productId}")]
+    public async Task<IActionResult> RemoveFromWishlist(int productId)
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(ApiResponse<object>.Fail("Invalid user"));
+
+            await _wishlistService.RemoveFromWishlistAsync(userId, productId);
+
+            return Ok(
+                ApiResponse<bool>.SuccessResponse(true, "Product removed from wishlist")
             );
         }
         catch (Exception ex)

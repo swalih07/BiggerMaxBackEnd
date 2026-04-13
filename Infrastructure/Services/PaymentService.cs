@@ -1,4 +1,4 @@
-﻿using Application.DTOs;
+using Application.DTOs;
 using Application.Interfaces;
 using BiggerMaxApi.Common;
 using Domain.Enums;
@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 
-
 namespace Infrastructure.Services
 {
     public class PaymentService : IPaymentService
@@ -19,9 +18,9 @@ namespace Infrastructure.Services
         private readonly RazorpaySettings _razorpaySettings;
 
         public PaymentService(
-     AppDbContext context,
-     IPaymentGatewayService paymentGatewayService,
-     IOptions<RazorpaySettings> razorpayOptions)
+            AppDbContext context,
+            IPaymentGatewayService paymentGatewayService,
+            IOptions<RazorpaySettings> razorpayOptions)
         {
             _context = context;
             _paymentGatewayService = paymentGatewayService;
@@ -42,25 +41,29 @@ namespace Infrastructure.Services
                 throw new Exception("Order not found");
 
             if (order.Status != OrderStatus.Pending)
-                throw new Exception("Order already processed");
+                throw new Exception("Order is no longer in pending status");
 
-            // Optional: call gateway if needed
-            await _paymentGatewayService
+            // Call gateway to create Razorpay Order
+            var razorpayOrder = await _paymentGatewayService
                 .CreateRazorpayOrderAsync(order.TotalAmount, order.Id);
+
+            // ✅ Save RazorpayOrderId in local database to track it
+            order.RazorpayOrderId = razorpayOrder.RazorpayOrderId;
+            await _context.SaveChangesAsync();
 
             return new PaymentResponseDto
             {
                 OrderId = order.Id,
-                RazorpayKey = _razorpaySettings.Key,
+                RazorpayKey = razorpayOrder.RazorpayKey,
+                RazorpayOrderId = razorpayOrder.RazorpayOrderId,
                 Amount = order.TotalAmount
             };
         }
 
-
-        public bool VerifyPayment(RazorpayVerifyDto model)
+        public async Task<bool> VerifyAndConfirmPaymentAsync(RazorpayVerifyDto model)
         {
-            var secret = _razorpaySettings.KeySecret;
-
+            // 1. Verify Signature
+            var secret = _razorpaySettings.Secret; // ✅ UPDATED FROM 'KeySecret' to 'Secret'
             string payload = model.RazorpayOrderId + "|" + model.RazorpayPaymentId;
 
             var keyBytes = Encoding.UTF8.GetBytes(secret);
@@ -72,8 +75,21 @@ namespace Infrastructure.Services
                                     .Replace("-", "")
                                     .ToLower();
 
-            return generatedSignature == model.RazorpaySignature;
-        }
+            bool isValid = generatedSignature == model.RazorpaySignature;
+            if (!isValid) return false;
 
+            // 2. Find and update the order
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.RazorpayOrderId == model.RazorpayOrderId);
+
+            if (order == null) return false;
+
+            order.Status = OrderStatus.Paid;
+            order.RazorpayPaymentId = model.RazorpayPaymentId;
+            
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
